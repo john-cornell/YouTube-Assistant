@@ -1,4 +1,15 @@
 .venv
 *.env
 __pycache__
-*/*.pyc
+*/__pycache__
+/__pycache__/embeddings_store.cpython-311.pyc
+/chains/__pycache__/AgentTypeChain.cpython-311.pyc
+/chains/__pycache__/RagPromptOptimizerChain.cpython-311.pyc
+/chains/__pycache__/VideoTranscriptQueryChain.cpython-311.pyc
+/multiagent/__pycache__/agent_input.cpython-311.pyc
+/multiagent/__pycache__/agents.cpython-311.pyc
+/multiagent/__pycache__/json_extractor.cpython-311.pyc
+/multiagent/__pycache__/multi_agent_prompts.cpython-311.pyc
+/multiagent/__pycache__/query_type_agent.cpython-311.pyc
+/multiagent/__pycache__/rag_prompt_agent.cpython-311.pyc
+/vectorstorage/__pycache__/vectorstore.cpython-311.pyc
