@@ -2,7 +2,7 @@ from langchain.vectorstores.faiss import FAISS
 from embeddings_store import get_embeddings, Embeddings
 from langchain.document_loaders import YoutubeLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
+from urllib.parse import urlparse, parse_qs
 
 def get_vectorstore_for_db(video_url: str, embedding: Embeddings) -> FAISS:
     vectorstore_path = get_path_from_url(video_url)
@@ -38,7 +38,7 @@ def create_vector_db_from_youtube_url(video_url: str, embeddings) -> FAISS:
     return db
 
 def get_path_from_url(url: str) -> str:
-    video_id = url.split("v=")[-1]
+    video_id = parse_qs(urlparse(url).query).get("v") or url.split("/")[-1]
     return f"./vectorstorage/{video_id}.faiss"
 
 def check_if_vector_db_exists(video_url: str) -> bool:

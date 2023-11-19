@@ -1,5 +1,5 @@
 import streamlit as st
-import langchain_helper as lch
+import assistant
 import textwrap
 
 st.title = "YouTube Assistant"
@@ -11,7 +11,7 @@ with st.sidebar:
 
 
 if  query and url and submitted:
-    response, docs, prompt = lch.get_response_from_query(url, query)
+    response, docs, prompt = assistant.get_response_from_query(url, query)
 
     type(prompt)
 
