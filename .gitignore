@@ -1,7 +1,9 @@
 .venv
 *.env
+*.pyc
 __pycache__
 */__pycache__
+*/*/__pycache__/*.pyc
 /__pycache__/embeddings_store.cpython-311.pyc
 /chains/__pycache__/AgentTypeChain.cpython-311.pyc
 /chains/__pycache__/RagPromptOptimizerChain.cpython-311.pyc

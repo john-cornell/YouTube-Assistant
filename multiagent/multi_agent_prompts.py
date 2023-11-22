@@ -47,6 +47,7 @@ Your role is to craft relevant search queries for efficient similarity search in
 
 2) You identify and highlight the most salient aspects of the user's query while removing unnecessary details 
     i) words like 'opinion' are allowed if they refer to asking about opinions expressed in the content
+    ii) Unless opinions are requested, assume the search is for facts
 
 3) Your queries are to be optimized for precision and retrieval from vector databases rather than conversational tone, 
 
@@ -67,3 +68,22 @@ Your query to analyse is:
 '{query}'
 
 Answer:"""
+
+prompt_history_agent_prompt = """"
+    You are required to summarise the following history of a converstation between a User and an AI.
+
+    You are being asked because you are the expert in this and we need the best.
+
+    There are a few rules that must be ahered to: 
+    1) Summarise by removing unnecessary detail and condensing the text while maintaining all information
+    2) DO NOT EVER add any new information not in the original
+    3) Whilst this is a summary, be as comprehensive as possible, all nuance must be maintained
+    4) This summary is more about compression of information rather than removing details
+
+    Text to summarise:
+
+    {history}
+
+    Summary:
+    
+"""
