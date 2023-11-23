@@ -1,7 +1,6 @@
 import asyncio
 
 from .agents import defined_agent, agent_type
-from .agent_input import Agent_Input
 from .multi_agent_prompts import prompt_history_agent_prompt
 
 from langchain.chains import LLMChain
@@ -26,7 +25,7 @@ class prompt_history_agent_types(agent_type):
 class prompt_history_agent(defined_agent):
     #token limit assumes Claude level window, but very conservative, could probably make way higher - this is for docs and query separately, 60000 on Claude 100 000 
     #until 2.1 is rolled out
-    def __init__(self, llm, template_prompt = None, token_limit=1000):
+    def __init__(self, llm, template_prompt = None, token_limit=300):
         self.type = type
         self.history = []
         self.docs = set() #hashset to avoid dups
@@ -131,7 +130,7 @@ class prompt_history_agent(defined_agent):
             #if just summarised, this will just be a single item, so not a performance issue to call again
         
             self.docs = set()
-            self.docs = await self.format_docs()
+            self.docs.add(self.format_docs())
 
             print("complete docs")
         return history
