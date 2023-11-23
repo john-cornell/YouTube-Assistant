@@ -42,8 +42,11 @@ class prompt_history_agent(defined_agent):
     #format
     async def format(self):
         lines = []
-        #READ LOCK, not calling self.append or self.add_summary where other instances of lock are
         async with self.history_lock:
+
+            print(self.history)
+                
+
             for context, text in self.history:
                 lines.append(f"{context}: \"{text}\"")
         
@@ -67,29 +70,22 @@ class prompt_history_agent(defined_agent):
         return await self.schedule_summarise_docs_if_required()
 
     async def append(self, type: prompt_input_type, item : str):
-        #Write lock, not calling format or self.add_summary where other instances of lock are
         async with self.history_lock:
             self.history.append((type.name, item))
 
     async def add_summary(self, summary):
         
-        #NO DEADLOCK, just resetting
         async with self.history_lock:
             self.history = []    
 
-        #locks internally
         await self.append(prompt_input_type.SUMMARY, summary)
 
     async def append_query(self, query):
-        #locks internally
         await self.append(prompt_input_type.User, query)
-        #locks internally
         await self.schedule_summarise_if_required()
 
     async def append_response(self, response):
-        #locks internally
         await self.append(prompt_input_type.AI, response) 
-        #locks internally
         await self.schedule_summarise_if_required()
 
     #summarise
@@ -107,11 +103,11 @@ class prompt_history_agent(defined_agent):
             print("summarise chats")        
             template = PromptTemplate(input_variables=["history"], template=self.prompt)
             chain = LLMChain(llm=self.llm, prompt=template, output_key="answer")            
-            self.add_summary(chain.run(history=history))
+            summary = chain.run(history=history)
             #if just summarised, this will just be a single item, so not a performance issue to call again
 
-            #not locking here as self.format has lock
-            self.history=[await self.format()]
+            #not locking here as add_summary has one
+            await self.add_summary(summary=summary)
 
             print("complete")
 
@@ -126,11 +122,12 @@ class prompt_history_agent(defined_agent):
             template = PromptTemplate(input_variables=["history"], template=self.prompt)
             chain = LLMChain(llm=self.llm, prompt=template, output_key="answer")
             
-            self.append_docs([chain.run(history=history)])
-            #if just summarised, this will just be a single item, so not a performance issue to call again
-        
-            self.docs = set()
-            self.docs.add(self.format_docs())
+            summary_docs = chain.run(history=history)
+            #if just summarised, this will just be a single item, so not a performance issue to call again       
+            # Adding directly so not as to call _summarise again 
+            async with self.docs_lock:
+                self.docs = set()
+                self.docs.add(summary_docs)
 
             print("complete docs")
         return history

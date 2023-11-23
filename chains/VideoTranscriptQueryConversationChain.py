@@ -83,7 +83,9 @@ class VideoTranscriptQueryConversationChain(Chain):
             
             prompt=build_chat_prompt()
             #Send simple prompt to LLM
-            return self.get_response(prompt_history_agent, prompt, query, history, await prompt_history_agent.format_docs())
+            docs_history = await prompt_history_agent.format_docs()
+
+            return await self.get_response(prompt_history_agent, prompt, query, history, docs_history)
         
         #Optimize RAG search prompt
         optimizer_chain = RagPromptOptimizerChain(llm=self.llm, debug=True)
