@@ -44,8 +44,17 @@ class VideoTranscriptQueryConversationChain(Chain):
             inputs: Dict[str, Any],
             run_manager: Optional[CallbackManagerForChainRun] = None
     ) -> Dict[str, str]:
+        
+        raise Exception("use asynch")
+    
 
-        prompt_history_agent = self.get_history_agent()
+    async def _acall(
+            self,
+            inputs: Dict[str, Any],
+            run_manager: Optional[CallbackManagerForChainRun] = None
+    ) -> Dict[str, str]:
+
+        prompt_history_agent = await self.get_history_agent()
         prompt = build_prompt()
 
         #Get inputs
@@ -65,16 +74,16 @@ class VideoTranscriptQueryConversationChain(Chain):
         print(f"Process response: {process_response}")
 
         #get history
-        history = prompt_history_agent.format()
+        history = await prompt_history_agent.format()
 
         if process_response == "SUMMARY":
             print("SUMMARY not yet supported")
-            return self.build_return("That question would require a summarisation of the whole video, which is not yet supported.", [], history, None)
+            return self.build_return("That question would require a summarisation of the whole video, which is not yet supported.", [], history, "")
         if process_response == "NONE":
             
             prompt=build_chat_prompt()
             #Send simple prompt to LLM
-            return self.get_response(prompt_history_agent, prompt, query, history, prompt_history_agent.format_docs())
+            return self.get_response(prompt_history_agent, prompt, query, history, await prompt_history_agent.format_docs())
         
         #Optimize RAG search prompt
         optimizer_chain = RagPromptOptimizerChain(llm=self.llm, debug=True)
@@ -88,23 +97,23 @@ class VideoTranscriptQueryConversationChain(Chain):
         docs = db.similarity_search(optimizer_response, k=self.k)
         docs_page_content = [doc.page_content for doc in docs]
 
-        prompt_history_agent.append_docs(docs_page_content)        
+        await prompt_history_agent.append_docs(docs_page_content)        
 
         #Send RAG prompt to LLM
-        return self.get_response(prompt_history_agent, prompt, query, history, docs_page_content)
+        return await self.get_response(prompt_history_agent, prompt, query, history, docs_page_content)
 
-    def get_response(self, prompt_history_agent, prompt, query, history, docs_page_content):
+    async def get_response(self, prompt_history_agent, prompt, query, history, docs_page_content):
         chain = LLMChain(llm=self.llm, prompt=prompt, output_key="answer")    
 
         response = chain.run(history=history, query=query, docs=docs_page_content)        
         response = response.replace("\r", "")
 
-        prompt_history_agent.append_query(query=query)
-        prompt_history_agent.append_response(response)
+        await prompt_history_agent.append_query(query=query)
+        await prompt_history_agent.append_response(response)
 
         return self.build_return(response, docs_page_content, history, prompt)
 
-    def get_history_agent(self):
+    async def get_history_agent(self):
         if "agent" not in self.agents:
             self.agents["agent"] = prompt_history_agent(self.llm)
         

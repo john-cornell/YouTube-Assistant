@@ -10,6 +10,15 @@
                 "run",
                 "main.py"
             ]
+        }, {
+            "name": "debug async test",
+            "type": "python",
+            "request": "launch",
+            "program": ".venv\\Lib\\site-packages\\streamlit",
+            "args": [
+                "run",
+                "asynch_test.py"
+            ]
         }
     ]
-    }
+}

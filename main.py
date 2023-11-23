@@ -1,11 +1,12 @@
 import streamlit as st
 from assistant import assistant
 import textwrap
-
-st.title = "YouTube Assistant"
+import asyncio
 
 if 'assistant' not in st.session_state:
     st.session_state.assistant = assistant(k=20)
+
+st.title = "SHIPIT"
 
 with st.sidebar:
     with st.form(key='my_form'):
@@ -13,8 +14,8 @@ with st.sidebar:
         query = st.text_area(label="Question")
         submitted = st.form_submit_button(label='Submit')
 
-if query and url and submitted:
-    response, docs, history, prompt = st.session_state.assistant.get_response_from_query(url, query)
+async def get_response_async():
+    response, docs, history, prompt = await st.session_state.assistant.get_response_from_query(url, query)
 
     st.subheader("Answer:")
     st.markdown(response)
@@ -29,9 +30,31 @@ if query and url and submitted:
 
     if docs is not None:
         with st.expander("Documents"):
-            if isinstance(docs, list) and len(docs) > 0:
-                for i, doc in enumerate(docs):
-                    st.subheader(f'Document {i+1}')
-                    st.text(textwrap.fill(doc, 80))
+            if isinstance(docs, list):
+                if len(docs) > 0:
+                    for i, doc in enumerate(docs):
+                        st.subheader(f'Document {i+1}')
+                        st.text(textwrap.fill(doc, 80))
+                else:
+                    st.text("No documents available")                    
             else:
+                print(type(docs))
                 st.text(textwrap.fill(docs, 80))
+
+# Create a context manager to run an event loop
+from contextlib import contextmanager
+
+@contextmanager
+def setup_event_loop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        yield loop
+    finally:
+        loop.close()
+        asyncio.set_event_loop(None)
+
+if query and url and submitted:
+    with setup_event_loop() as loop:
+        loop.run_until_complete(get_response_async())
+

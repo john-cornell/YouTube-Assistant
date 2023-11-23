@@ -14,10 +14,10 @@ class assistant:
         chat = ChatAnthropic(temperature=0.4)
         self.chain = VideoTranscriptQueryConversationChain(llm=chat, k=k, embeddings=Embeddings.HUGGINGFACE, debug=True)
 
-    def get_response_from_query(self, url : str, query : str):                        
-        response = self.chain.run({"url": url, "query": query})
+    async def get_response_from_query(self, url : str, query : str):                        
+        response = await self.chain.arun({"url": url, "query": query})
 
         output = response["response"]
         metadata = response["metadata"]
 
-        return output, metadata["docs"], metadata["history"], metadata["prompt"]
+        return output, metadata["docs"], metadata["history"], metadata["prompt"] 
