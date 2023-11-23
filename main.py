@@ -6,7 +6,7 @@ import asyncio
 if 'assistant' not in st.session_state:
     st.session_state.assistant = assistant(k=20)
 
-st.title = "SHIPIT"
+st.title("SHIPIT")
 
 with st.sidebar:
     with st.form(key='my_form'):
